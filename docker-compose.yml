@@ -1,0 +1,86 @@
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    command:
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+    networks:
+      - traefik-net
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: jenkins
+    user: root
+    ports:
+      - "8081:8080"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.localhost`)"
+      - "traefik.http.routers.jenkins.entrypoints=web"
+      - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
+    networks:
+      - traefik-net
+
+  gitea:
+    image: gitea/gitea:1.21.11
+    container_name: gitea
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+    volumes:
+      - gitea_data:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.localhost`)"
+      - "traefik.http.routers.gitea.entrypoints=web"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+    networks:
+      - traefik-net
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    networks:
+      - traefik-net
+
+  grafana:
+    image: grafana/grafana-oss:latest
+    container_name: grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    networks:
+      - traefik-net
+
+volumes:
+  jenkins_home:
+  gitea_data:
+  grafana_data:
+
+networks:
+  traefik-net:
+    driver: bridge
