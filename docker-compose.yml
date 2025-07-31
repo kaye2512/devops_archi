@@ -20,7 +20,7 @@ services:
       - "./letsencrypt:/letsencrypt"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`traefik.wk-archi-o23b-4-5-g2.fr`)"
+      - "traefik.http.routers.api.rule=Host(`traefik.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.service=api@internal"
       - "traefik.http.routers.api.tls=true"
@@ -35,17 +35,19 @@ services:
 
 
   jenkins:
-    image: jenkins/jenkins:lts
+    image: jenkins-with-docker:latest
     container_name: jenkins
     user: root
     ports:
       - "8081:8080"
     volumes:
       - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.jenkins.rule=Host(`jenkins.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.jenkins.entrypoints=web"
+      - "traefik.http.routers.jenkins.tls.certresolver=letsencrypt"
       - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
     networks:
       - traefik-net
@@ -62,9 +64,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.gitea.rule=Host(`gitea.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.gitea.entrypoints=web"
+      - "traefik.http.routers.gitea-secure.rule=Host(`gitea.wk-archi-o23b-4-5-g7.fr`)"
+      - "traefik.http.routers.gitea-secure.entrypoints=websecure"
+      - "traefik.http.routers.gitea-secure.tls=true"
+      - "traefik.http.routers.gitea-secure.tls.certresolver=letsencrypt"
       - "traefik.http.services.gitea.loadbalancer.server.port=3000"
     networks:
       - traefik-net
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
