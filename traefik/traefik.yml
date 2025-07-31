@@ -1,12 +1,20 @@
-api:
-  dashboard: true
-  insecure: true
-
 entryPoints:
   web:
     address: ":80"
+  websecure:
+    address: ":443"
+
+api:
+  dashboard: true
 
 providers:
   docker:
-    endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: ton.email@example.com
+      storage: /letsencrypt/acme.json
+      httpChallenge:
+        entryPoint: web

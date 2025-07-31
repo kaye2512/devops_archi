@@ -2,17 +2,14 @@ services:
   traefik:
     image: traefik:v2.10
     container_name: traefik
-    command:
-      - "--api.dashboard=true"
-      - "--providers.docker=true"
-      - "--providers.docker.exposedByDefault=false"
-      - "--entrypoints.web.address=:80"
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
       - "./traefik/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "./traefik/acme.json:/letsencrypt/acme.json"
     networks:
       - traefik-net
 
@@ -26,7 +23,7 @@ services:
       - jenkins_home:/var/jenkins_home
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jenkins.rule=Host(`jenkins.localhost`)"
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.jenkins.entrypoints=web"
       - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
     networks:
@@ -42,7 +39,7 @@ services:
       - gitea_data:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gitea.rule=Host(`gitea.localhost`)"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.gitea.entrypoints=web"
       - "traefik.http.services.gitea.loadbalancer.server.port=3000"
     networks:
@@ -54,7 +51,7 @@ services:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.localhost`)"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.prometheus.entrypoints=web"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
     networks:
@@ -70,7 +67,7 @@ services:
       - grafana_data:/var/lib/grafana
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.localhost`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.grafana.entrypoints=web"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
     networks:
