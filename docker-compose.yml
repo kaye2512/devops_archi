@@ -2,6 +2,9 @@ services:
   registry:
     image: registry:2
     container_name: registry
+    environment:
+      - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+      - REGISTRY_HTTP_HOST=https://registry.wk-archi-o23b-4-5-g7.fr
     ports:
       - "5000:5000"
     labels:
@@ -12,7 +15,9 @@ services:
       - "traefik.http.services.registry.loadbalancer.server.port=5000"
     volumes:
       - ./data/registry:/var/lib/registry
-
+    networks:
+      - traefik-net
+      
   traefik:
     image: traefik:v3.4
     container_name: traefik
