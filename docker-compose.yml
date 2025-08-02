@@ -1,4 +1,18 @@
 services:
+  registry:
+    image: registry:2
+    container_name: registry
+    ports:
+      - "5000:5000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=Host(`registry.wk-archi-o23b-4-5-g7.fr`)"
+      - "traefik.http.routers.registry.entrypoints=websecure"
+      - "traefik.http.routers.registry.tls.certresolver=letsencrypt"
+      - "traefik.http.services.registry.loadbalancer.server.port=5000"
+    volumes:
+      - ./data/registry:/var/lib/registry
+
   traefik:
     image: traefik:v3.4
     container_name: traefik
