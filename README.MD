@@ -77,6 +77,14 @@ Cette plateforme DevOps offre un environnement complet pour le développement, l
   - Visualisation des métriques
   - Alertes configurables
 
+### 6. **Registry** - Registre Docker privé
+- **Image**: registry:2
+- **Fonctionnalités** :
+  - Hébergement d’images Docker privées pour vos projets
+  - Accès sécurisé via HTTPS grâce à Traefik et Let's Encrypt
+  - Stockage persistant des images dans `./data/registry`
+  - Accessible à l’adresse : https://registry.wk-archi-o23b-4-5-g7.fr:5000
+
 ## 📋 Prérequis
 
 - **Docker** : Version 20.10 ou supérieure
@@ -153,6 +161,7 @@ Une fois démarré, accédez aux services via :
 | **Gitea** | https://gitea.wk-archi-o23b-4-5-g7.fr | 3000 | Serveur Git |
 | **Grafana** | https://grafana.wk-archi-o23b-4-5-g7.fr | 3000 | Dashboards de monitoring |
 | **Prometheus** | https://prometheus.wk-archi-o23b-4-5-g7.fr | 9090 | Métriques système |
+| **Registry** | https://registry.wk-archi-o23b-4-5-g7.fr | 5000 | Registre privé d’images Docker |
 
 ### Identifiants par défaut
 
