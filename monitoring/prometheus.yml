@@ -37,14 +37,14 @@ scrape_configs:
     scrape_interval: 30s
     scrape_timeout: 10s
 
-  # Gitea metrics (avec token)
+  # Gitea metrics (essai avec et sans token)
   - job_name: 'gitea'
     static_configs:
       - targets: ['gitea:3000']
     metrics_path: '/metrics'
     scrape_interval: 30s
-    params:
-      token: ['prometheus-metrics-token']
+    scrape_timeout: 10s
+    # Token sera ajouté automatiquement si nécessaire par Gitea
 
   # Docker Registry metrics (debug port)
   - job_name: 'registry'
