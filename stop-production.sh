@@ -17,17 +17,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Vérifier si des conteneurs tournent
-if docker-compose ps | grep -q "Up"; then
+if docker compose ps | grep -q "Up"; then
     echo -e "${CYAN}📋 Services actuellement en cours d'exécution:${NC}"
-    docker-compose ps
+    docker compose ps
     
     echo -e "\n${YELLOW}⏳ Arrêt en cours...${NC}"
     
     # Arrêt gracieux
-    docker-compose stop
+    docker compose stop
     
     # Suppression des conteneurs
-    docker-compose down
+    docker compose down
     
     if [[ $? -eq 0 ]]; then
         echo -e "${GREEN}✅ Tous les services ont été arrêtés avec succès!${NC}"
@@ -40,7 +40,7 @@ else
 fi
 
 echo -e "\n${CYAN}📊 Status final:${NC}"
-docker-compose ps
+docker compose ps
 
 echo -e "\n${GREEN}🎯 Services arrêtés. Pour redémarrer:${NC}"
 echo -e "${CYAN}  ./start-production.sh${NC}"

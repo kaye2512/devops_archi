@@ -21,34 +21,60 @@ show_help() {
     echo -e "${WHITE}Usage: ./manage-stack.sh [COMMAND] [SERVICE]${NC}"
     echo ""
     echo -e "${YELLOW}Commandes disponibles:${NC}"
-    echo -e "${WHITE}  start    - Démarre tous les services${NC}"
-    echo -e "${WHITE}  stop     - Arrête tous les services${NC}"
-    echo -e "${WHITE}  restart  - Redémarre tous les services${NC}"
-    echo -e "${WHITE}  status   - Affiche le statut des services${NC}"
-    echo -e "${WHITE}  logs     - Affiche les logs (ajouter nom du service pour un service spécifique)${NC}"
-    echo -e "${WHITE}  backup   - Sauvegarde les données importantes${NC}"
-    echo -e "${WHITE}  restore  - Restaure une sauvegarde${NC}"
-    echo -e "${WHITE}  update   - Met à jour les images Docker${NC}"
-    echo -e "${WHITE}  clean    - Nettoie les ressources Docker inutilisées${NC}"
+    echo -e "${WHITE}  start         - Démarre tous les services${NC}"
+    echo -e "${WHITE}  stop          - Arrête tous les services${NC}"
+    echo -e "${WHITE}  restart       - Redémarre tous les services${NC}"
+    echo -e "${WHITE}  status        - Affiche le statut des services${NC}"
+    echo -e "${WHITE}  logs          - Affiche les logs (ajouter nom du service pour un service spécifique)${NC}"
+    echo -e "${WHITE}  backup        - Sauvegarde les données importantes${NC}"
+    echo -e "${WHITE}  restore       - Restaure une sauvegarde${NC}"
+    echo -e "${WHITE}  update        - Met à jour les images Docker${NC}"
+    echo -e "${WHITE}  clean         - Nettoie les ressources Docker inutilisées${NC}"
+    echo -e "${WHITE}  check-networks - Vérifie les connexions réseau${NC}"
+    echo -e "${WHITE}  fix-networks  - Corrige les connexions réseau${NC}"
     echo ""
     echo -e "${YELLOW}Exemples:${NC}"
     echo -e "${GRAY}  ./manage-stack.sh start${NC}"
     echo -e "${GRAY}  ./manage-stack.sh logs prometheus${NC}"
-    echo -e "${GRAY}  ./manage-stack.sh status${NC}"
+    echo -e "${GRAY}  ./manage-stack.sh check-networks${NC}"
+    echo -e "${GRAY}  ./manage-stack.sh fix-networks${NC}"
 }
 
 start_services() {
     echo -e "${GREEN}🚀 Démarrage de la stack DevOps...${NC}"
     
-    # Créer le réseau si nécessaire
+    # Créer les réseaux si nécessaire
+    echo -e "${YELLOW}📡 Vérification des réseaux Docker...${NC}"
+    
     if ! docker network ls --filter name=tiptop-net --format "{{.Name}}" | grep -q "tiptop-net"; then
+        echo -e "${YELLOW}🔨 Création du réseau tiptop-net...${NC}"
         docker network create tiptop-net
     fi
     
-    docker-compose up -d
+    if ! docker network ls --filter name=traefik-net --format "{{.Name}}" | grep -q "traefik-net"; then
+        echo -e "${YELLOW}🔨 Création du réseau traefik-net...${NC}"
+        docker network create traefik-net
+    fi
+    
+    docker compose up -d
     
     if [[ $? -eq 0 ]]; then
         echo -e "${GREEN}✅ Services démarrés avec succès!${NC}"
+        
+        # Attendre un peu
+        sleep 10
+        
+        # Connecter tous les conteneurs au réseau traefik-net
+        echo -e "${YELLOW}🔗 Connexion des conteneurs au réseau traefik-net...${NC}"
+        
+        CONTAINERS=("traefik" "jenkins" "gitea" "registry" "prometheus" "grafana" "node-exporter" "cadvisor")
+        
+        for container in "${CONTAINERS[@]}"; do
+            if docker ps --filter "name=$container" --filter "status=running" | grep -q "$container"; then
+                docker network connect traefik-net "$container" 2>/dev/null || true
+            fi
+        done
+        
         sleep 5
         show_services_urls
     else
@@ -58,7 +84,7 @@ start_services() {
 
 stop_services() {
     echo -e "${YELLOW}🛑 Arrêt de la stack DevOps...${NC}"
-    docker-compose down
+    docker compose down
     
     if [[ $? -eq 0 ]]; then
         echo -e "${GREEN}✅ Services arrêtés avec succès!${NC}"
@@ -76,7 +102,7 @@ restart_services() {
 
 show_status() {
     echo -e "${CYAN}📊 Statut des services:${NC}"
-    docker-compose ps
+    docker compose ps
     
     echo -e "\n${CYAN}🔍 Vérification de la connectivité:${NC}"
     
@@ -105,6 +131,81 @@ show_status() {
     show_services_urls
 }
 
+check_networks() {
+    echo -e "${CYAN}🌐 Vérification des connexions réseau...${NC}"
+    
+    # Vérifier que les réseaux existent
+    for network in "traefik-net" "tiptop-net"; do
+        if docker network ls --filter name=$network --format "{{.Name}}" | grep -q "$network"; then
+            echo -e "${GREEN}✅ Réseau $network existe${NC}"
+        else
+            echo -e "${RED}❌ Réseau $network n'existe pas${NC}"
+        fi
+    done
+    
+    # Vérifier les connexions des conteneurs
+    echo -e "\n${CYAN}📋 Connexions des conteneurs:${NC}"
+    
+    CONTAINERS=("traefik" "jenkins" "gitea" "registry" "prometheus" "grafana" "node-exporter" "cadvisor")
+    
+    for container in "${CONTAINERS[@]}"; do
+        if docker ps --filter "name=$container" --filter "status=running" | grep -q "$container"; then
+            echo -e "${WHITE}📦 $container:${NC}"
+            
+            # Vérifier traefik-net
+            if docker inspect "$container" | grep -q '"traefik-net"'; then
+                echo -e "${GREEN}  ✅ Connecté à traefik-net${NC}"
+            else
+                echo -e "${RED}  ❌ Non connecté à traefik-net${NC}"
+            fi
+            
+            # Vérifier tiptop-net
+            if docker inspect "$container" | grep -q '"tiptop-net"'; then
+                echo -e "${GREEN}  ✅ Connecté à tiptop-net${NC}"
+            else
+                echo -e "${YELLOW}  ⚠️  Non connecté à tiptop-net${NC}"
+            fi
+        else
+            echo -e "${RED}📦 $container: Non démarré${NC}"
+        fi
+    done
+}
+
+fix_networks() {
+    echo -e "${YELLOW}🔧 Correction des connexions réseau...${NC}"
+    
+    # Créer les réseaux si nécessaire
+    for network in "traefik-net" "tiptop-net"; do
+        if ! docker network ls --filter name=$network --format "{{.Name}}" | grep -q "$network"; then
+            echo -e "${YELLOW}🔨 Création du réseau $network...${NC}"
+            if [[ "$network" == "tiptop-net" ]]; then
+                docker network create tiptop-net
+            else
+                docker network create traefik-net
+            fi
+        fi
+    done
+    
+    # Reconnecter tous les conteneurs
+    CONTAINERS=("traefik" "jenkins" "gitea" "registry" "prometheus" "grafana" "node-exporter" "cadvisor")
+    
+    for container in "${CONTAINERS[@]}"; do
+        if docker ps --filter "name=$container" --filter "status=running" | grep -q "$container"; then
+            echo -e "${YELLOW}🔗 Reconnexion de $container aux réseaux...${NC}"
+            
+            # Connecter à traefik-net
+            docker network connect traefik-net "$container" 2>/dev/null && echo -e "${GREEN}  ✅ Connecté à traefik-net${NC}" || echo -e "${GRAY}  ℹ️  Déjà connecté à traefik-net${NC}"
+            
+            # Connecter à tiptop-net si nécessaire
+            if [[ "$container" != "traefik" ]]; then
+                docker network connect tiptop-net "$container" 2>/dev/null && echo -e "${GREEN}  ✅ Connecté à tiptop-net${NC}" || echo -e "${GRAY}  ℹ️  Déjà connecté à tiptop-net${NC}"
+            fi
+        fi
+    done
+    
+    echo -e "${GREEN}✅ Correction des réseaux terminée${NC}"
+}
+
 show_services_urls() {
     echo -e "${MAGENTA}  • Prometheus: https://prometheus.wk-archi-o23b-4-5-g7.fr${NC}"
     echo -e "${MAGENTA}  • Grafana: https://grafana.wk-archi-o23b-4-5-g7.fr (admin/admin)${NC}"
@@ -119,10 +220,10 @@ show_logs() {
     
     if [[ -n "$service" ]]; then
         echo -e "${CYAN}📝 Logs pour le service: $service${NC}"
-        docker-compose logs -f --tail=100 "$service"
+        docker compose logs -f --tail=100 "$service"
     else
         echo -e "${CYAN}📝 Logs de tous les services:${NC}"
-        docker-compose logs -f --tail=50
+        docker compose logs -f --tail=50
     fi
 }
 
@@ -148,10 +249,10 @@ backup_data() {
 
 update_images() {
     echo -e "${CYAN}🔄 Mise à jour des images Docker...${NC}"
-    docker-compose pull
+    docker compose pull
     
     echo -e "${YELLOW}Redémarrage avec les nouvelles images...${NC}"
-    docker-compose up -d
+    docker compose up -d
     
     echo -e "${GREEN}✅ Mise à jour terminée${NC}"
 }
@@ -199,6 +300,12 @@ case "${1:-help}" in
         ;;
     "clean")
         clean_docker
+        ;;
+    "check-networks")
+        check_networks
+        ;;
+    "fix-networks")
+        fix_networks
         ;;
     "help"|*)
         show_help

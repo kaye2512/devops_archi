@@ -30,7 +30,7 @@ fi
 echo -e "${GREEN}✅ Docker est en marche${NC}"
 
 # Vérifier si Docker Compose est installé
-if ! command -v docker-compose &> /dev/null; then
+if ! docker compose version &> /dev/null; then
     echo -e "${RED}❌ Docker Compose n'est pas installé${NC}"
     exit 1
 fi
@@ -41,14 +41,25 @@ echo -e "${GREEN}✅ Docker Compose est disponible${NC}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-# Créer le réseau externe si nécessaire
-echo -e "${YELLOW}📡 Vérification du réseau tiptop-net...${NC}"
+# Créer les réseaux externes si nécessaire
+echo -e "${YELLOW}📡 Vérification des réseaux Docker...${NC}"
+
+# Créer le réseau tiptop-net si nécessaire
 if ! docker network ls --filter name=tiptop-net --format "{{.Name}}" | grep -q "tiptop-net"; then
     echo -e "${YELLOW}🔨 Création du réseau tiptop-net...${NC}"
     docker network create tiptop-net
     echo -e "${GREEN}✅ Réseau tiptop-net créé${NC}"
 else
     echo -e "${GREEN}✅ Réseau tiptop-net existe déjà${NC}"
+fi
+
+# Créer le réseau traefik-net si nécessaire  
+if ! docker network ls --filter name=traefik-net --format "{{.Name}}" | grep -q "traefik-net"; then
+    echo -e "${YELLOW}🔨 Création du réseau traefik-net...${NC}"
+    docker network create traefik-net
+    echo -e "${GREEN}✅ Réseau traefik-net créé${NC}"
+else
+    echo -e "${GREEN}✅ Réseau traefik-net existe déjà${NC}"
 fi
 
 # Vérifier les fichiers de configuration
@@ -86,18 +97,38 @@ echo -e "${GREEN}✅ Répertoires configurés${NC}"
 
 # Arrêter les services existants s'ils tournent
 echo -e "${YELLOW}🛑 Arrêt des services existants...${NC}"
-docker-compose down
+docker compose down
 
 # Démarrer les services
 echo -e "${YELLOW}🐳 Démarrage des conteneurs...${NC}"
-docker-compose up -d
+docker compose up -d
 
 if [[ $? -eq 0 ]]; then
     echo -e "\n${GREEN}✅ Tous les services ont été démarrés avec succès!${NC}"
     
     # Attendre que les services soient prêts
-    echo -e "${YELLOW}⏳ Attente du démarrage des services (30s)...${NC}"
-    sleep 30
+    echo -e "${YELLOW}⏳ Attente du démarrage des services (15s)...${NC}"
+    sleep 15
+    
+    # S'assurer que tous les conteneurs sont connectés au réseau traefik-net
+    echo -e "${YELLOW}🔗 Vérification des connexions réseau traefik-net...${NC}"
+    
+    CONTAINERS=("traefik" "jenkins" "gitea" "registry" "prometheus" "grafana" "node-exporter" "cadvisor")
+    
+    for container in "${CONTAINERS[@]}"; do
+        if docker ps --filter "name=$container" --filter "status=running" | grep -q "$container"; then
+            # Vérifier si le conteneur est déjà connecté au réseau traefik-net
+            if ! docker inspect "$container" | grep -q '"traefik-net"'; then
+                echo -e "${YELLOW}🔌 Connexion de $container au réseau traefik-net...${NC}"
+                docker network connect traefik-net "$container" 2>/dev/null || echo -e "${GRAY}   $container déjà connecté ou erreur ignorée${NC}"
+            else
+                echo -e "${GREEN}✅ $container déjà connecté au réseau traefik-net${NC}"
+            fi
+        fi
+    done
+    
+    echo -e "${YELLOW}⏳ Attente supplémentaire (15s)...${NC}"
+    sleep 15
     
     echo -e "\n${CYAN}🌐 Vos services sont maintenant disponibles:${NC}"
     echo -e "${WHITE}  • Traefik Dashboard: https://traefik.wk-archi-o23b-4-5-g7.fr${NC}"
@@ -118,7 +149,7 @@ if [[ $? -eq 0 ]]; then
     
     # Vérifier l'état des services
     echo -e "\n${CYAN}📋 État des conteneurs:${NC}"
-    docker-compose ps
+    docker compose ps
     
     echo -e "\n${YELLOW}🎯 Prochaines étapes:${NC}"
     echo -e "${WHITE}  1. Accédez à Prometheus: https://prometheus.wk-archi-o23b-4-5-g7.fr/targets${NC}"
@@ -138,15 +169,15 @@ if [[ $? -eq 0 ]]; then
     
 else
     echo -e "${RED}❌ Erreur lors du démarrage des services${NC}"
-    echo -e "${YELLOW}📋 Vérifiez les logs avec: docker-compose logs${NC}"
+    echo -e "${YELLOW}📋 Vérifiez les logs avec: docker compose logs${NC}"
     exit 1
 fi
 
 echo -e "\n${CYAN}📖 Commandes utiles:${NC}"
-echo -e "${WHITE}  • Voir les logs: docker-compose logs -f [service]${NC}"
-echo -e "${WHITE}  • Arrêter: docker-compose down${NC}"
-echo -e "${WHITE}  • Redémarrer: docker-compose restart [service]${NC}"
-echo -e "${WHITE}  • Status: docker-compose ps${NC}"
+echo -e "${WHITE}  • Voir les logs: docker compose logs -f [service]${NC}"
+echo -e "${WHITE}  • Arrêter: docker compose down${NC}"
+echo -e "${WHITE}  • Redémarrer: docker compose restart [service]${NC}"
+echo -e "${WHITE}  • Status: docker compose ps${NC}"
 
 echo -e "\n${CYAN}🔧 Scripts de gestion:${NC}"
 echo -e "${WHITE}  • ./manage-stack.sh start|stop|restart|status|logs${NC}"

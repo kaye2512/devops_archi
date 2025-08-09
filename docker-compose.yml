@@ -172,6 +172,7 @@ services:
       - '--path.sysfs=/host/sys'
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
     networks:
+      - traefik-net
       - tiptop-net
 
   cadvisor:
@@ -188,6 +189,7 @@ services:
       - /dev/disk/:/dev/disk:ro
     privileged: true
     networks:
+      - traefik-net
       - tiptop-net
 
 volumes:
