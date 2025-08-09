@@ -56,12 +56,12 @@ if ($LASTEXITCODE -eq 0) {
     Start-Sleep -Seconds 30
     
     Write-Host "`n🌐 Vos services sont maintenant disponibles:" -ForegroundColor Cyan
-    Write-Host "  • Traefik Dashboard: https://traefik.wk-archi-023b-4-5-g7.fr" -ForegroundColor White
-    Write-Host "  • Jenkins: https://jenkins.wk-archi-023b-4-5-g7.fr (local: http://localhost:8081)" -ForegroundColor White
-    Write-Host "  • Gitea: https://gitea.wk-archi-023b-4-5-g7.fr" -ForegroundColor White
-    Write-Host "  • Registry: https://registry.wk-archi-023b-4-5-g7.fr" -ForegroundColor White
-    Write-Host "  • Prometheus: https://prometheus.wk-archi-023b-4-5-g7.fr (local: http://localhost:9090)" -ForegroundColor Magenta
-    Write-Host "  • Grafana: https://grafana.wk-archi-023b-4-5-g7.fr (local: http://localhost:3001)" -ForegroundColor Magenta
+    Write-Host "  • Traefik Dashboard: https://traefik.wk-archi-o23b-4-5-g7.fr" -ForegroundColor White
+    Write-Host "  • Jenkins: https://jenkins.wk-archi-o23b-4-5-g7.fr (local: http://localhost:8081)" -ForegroundColor White
+    Write-Host "  • Gitea: https://gitea.wk-archi-o23b-4-5-g7.fr" -ForegroundColor White
+    Write-Host "  • Registry: https://registry.wk-archi-o23b-4-5-g7.fr" -ForegroundColor White
+    Write-Host "  • Prometheus: https://prometheus.wk-archi-o23b-4-5-g7.fr (local: http://localhost:9090)" -ForegroundColor Magenta
+    Write-Host "  • Grafana: https://grafana.wk-archi-o23b-4-5-g7.fr (local: http://localhost:3001)" -ForegroundColor Magenta
     Write-Host "    └─ Identifiants: admin/admin" -ForegroundColor Gray
     
     Write-Host "`n📊 Services de monitoring locaux:" -ForegroundColor Cyan
@@ -75,9 +75,9 @@ if ($LASTEXITCODE -eq 0) {
     docker-compose ps
     
     Write-Host "`n🎯 Prochaines étapes:" -ForegroundColor Yellow
-    Write-Host "  1. Accédez à Prometheus: https://prometheus.wk-archi-023b-4-5-g7.fr/targets" -ForegroundColor White
+    Write-Host "  1. Accédez à Prometheus: https://prometheus.wk-archi-o23b-4-5-g7.fr/targets" -ForegroundColor White
     Write-Host "     └─ Vérifiez que tous les targets sont 'UP'" -ForegroundColor Gray
-    Write-Host "  2. Accédez à Grafana: https://grafana.wk-archi-023b-4-5-g7.fr" -ForegroundColor White
+    Write-Host "  2. Accédez à Grafana: https://grafana.wk-archi-o23b-4-5-g7.fr" -ForegroundColor White
     Write-Host "     └─ Connectez-vous avec admin/admin" -ForegroundColor Gray
     Write-Host "     └─ Le datasource Prometheus est pré-configuré" -ForegroundColor Gray
     Write-Host "  3. Importez des dashboards recommandés:" -ForegroundColor White

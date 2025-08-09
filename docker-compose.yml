@@ -4,12 +4,12 @@ services:
     container_name: registry
     environment:
       - REGISTRY_HTTP_ADDR=0.0.0.0:5000
-      - REGISTRY_HTTP_HOST=https://registry.wk-archi-023b-4-5-g7.fr
+      - REGISTRY_HTTP_HOST=https://registry.wk-archi-o23b-4-5-g7.fr
     ports:
       - "5000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registry.rule=Host(`registry.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.registry.rule=Host(`registry.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.registry.entrypoints=websecure"
       - "traefik.http.routers.registry.tls=true"
       - "traefik.http.routers.registry.tls.certresolver=letsencrypt"
@@ -43,9 +43,9 @@ services:
       - "./letsencrypt:/letsencrypt"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.api.rule=Host(`traefik.wk-archi-023b-4-5-g7.fr`)"
-      - "--certificatesresolvers.letsencrypt.acme.domain[1].main=dsp5-archi-023b-4-5-g7.fr"
-      - "--certificatesresolvers.letsencrypt.acme.domain[1].sans=*.dsp5-archi-023b-4-5-g7.fr"
+      - "traefik.http.routers.api.rule=Host(`traefik.wk-archi-o23b-4-5-g7.fr`)"
+      - "--certificatesresolvers.letsencrypt.acme.domain[1].main=dsp5-archi-o23b-4-5-g7.fr"
+      - "--certificatesresolvers.letsencrypt.acme.domain[1].sans=*.dsp5-archi-o23b-4-5-g7.fr"
       - "traefik.http.routers.api.entrypoints=websecure"
       - "traefik.http.routers.api.service=api@internal"
       - "traefik.http.routers.api.tls=true"
@@ -69,7 +69,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.jenkins.rule=Host(`jenkins.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.jenkins.rule=Host(`jenkins.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.jenkins.entrypoints=web"
       - "traefik.http.services.jenkins.loadbalancer.server.port=8080"
     networks:
@@ -86,9 +86,9 @@ services:
       - gitea_data:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.gitea.rule=Host(`gitea.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.gitea.rule=Host(`gitea.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.gitea.entrypoints=web"
-      - "traefik.http.routers.gitea-secure.rule=Host(`gitea.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.gitea-secure.rule=Host(`gitea.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.gitea-secure.entrypoints=websecure"
       - "traefik.http.routers.gitea-secure.tls=true"
       - "traefik.http.routers.gitea-secure.tls.certresolver=letsencrypt"
@@ -113,15 +113,15 @@ services:
       - '--web.console.templates=/etc/prometheus/consoles'
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
-      - '--web.external-url=https://prometheus.wk-archi-023b-4-5-g7.fr'
+      - '--web.external-url=https://prometheus.wk-archi-o23b-4-5-g7.fr'
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.prometheus.rule=Host(`prometheus.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.prometheus.rule=Host(`prometheus.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.prometheus.entrypoints=websecure"
       - "traefik.http.routers.prometheus.tls=true"
       - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
-      - "traefik.http.routers.prometheus-http.rule=Host(`prometheus.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.prometheus-http.rule=Host(`prometheus.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.prometheus-http.entrypoints=web"
       - "traefik.http.routers.prometheus-http.middlewares=redirect-to-https"
     networks:
@@ -137,19 +137,19 @@ services:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin
       - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=https://grafana.wk-archi-023b-4-5-g7.fr
+      - GF_SERVER_ROOT_URL=https://grafana.wk-archi-o23b-4-5-g7.fr
       - GF_SERVER_SERVE_FROM_SUB_PATH=false
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.grafana.rule=Host(`grafana.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
       - "traefik.http.services.grafana.loadbalancer.server.port=3000"
-      - "traefik.http.routers.grafana-http.rule=Host(`grafana.wk-archi-023b-4-5-g7.fr`)"
+      - "traefik.http.routers.grafana-http.rule=Host(`grafana.wk-archi-o23b-4-5-g7.fr`)"
       - "traefik.http.routers.grafana-http.entrypoints=web"
       - "traefik.http.routers.grafana-http.middlewares=redirect-to-https"
     networks:

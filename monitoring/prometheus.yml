@@ -2,7 +2,7 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    cluster: 'wk-archi-023b-production'
+    cluster: 'wk-archi-o23b-production'
     environment: 'production'
 
 rule_files:
