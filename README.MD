@@ -294,6 +294,10 @@ docker-compose up -d --build
 # Nettoyer les conteneurs arrêtés
 docker-compose down
 
+# Ouvrir une réseau manuelement sur docker si on met external rue
+docker network create tiptop-net
+
+
 # Supprimer tous les volumes (⚠️ ATTENTION)
 docker-compose down -v
 ```

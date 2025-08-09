@@ -1,11 +1,64 @@
 global:
   scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'wk-archi-023b-production'
+    environment: 'production'
+
+rule_files:
+  - "rules/*.yml"
 
 scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 10s
+
+  # Docker daemon metrics
   - job_name: 'docker'
     static_configs:
       - targets: ['host.docker.internal:9323']
+    scrape_interval: 30s
 
+  # Traefik metrics
   - job_name: 'traefik'
     static_configs:
       - targets: ['traefik:8080']
+    metrics_path: '/metrics'
+    scrape_interval: 15s
+
+  # Jenkins metrics (requires Prometheus plugin)
+  - job_name: 'jenkins'
+    static_configs:
+      - targets: ['jenkins:8080']
+    metrics_path: '/prometheus'
+    scrape_interval: 30s
+    scrape_timeout: 10s
+
+  # Gitea metrics
+  - job_name: 'gitea'
+    static_configs:
+      - targets: ['gitea:3000']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  # Docker Registry metrics
+  - job_name: 'registry'
+    static_configs:
+      - targets: ['registry:5000']
+    metrics_path: '/metrics'
+    scrape_interval: 60s
+
+  # Node Exporter - System metrics
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
+    scrape_interval: 15s
+
+  # cAdvisor - Container metrics
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+    scrape_interval: 15s
+    metrics_path: '/metrics'
