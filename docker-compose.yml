@@ -117,6 +117,8 @@ services:
       - '--web.enable-lifecycle'
       - '--web.enable-admin-api'
       - '--web.external-url=https://prometheus.wk-archi-o23b-4-5-g7.fr'
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.prometheus.rule=Host(`prometheus.wk-archi-o23b-4-5-g7.fr`)"
