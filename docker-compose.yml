@@ -4,6 +4,9 @@ services:
     container_name: registry
     environment:
       - REGISTRY_HTTP_ADDR=0.0.0.0:5000
+      - REGISTRY_HTTP_DEBUG_ADDR=0.0.0.0:5001
+      - REGISTRY_HTTP_DEBUG_PROMETHEUS_ENABLED=true
+      - REGISTRY_HTTP_DEBUG_PROMETHEUS_PATH=/metrics
       - REGISTRY_HTTP_HOST=https://registry.wk-archi-o23b-4-5-g7.fr
     ports:
       - "5000"

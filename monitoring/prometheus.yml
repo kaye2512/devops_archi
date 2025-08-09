@@ -15,11 +15,12 @@ scrape_configs:
       - targets: ['localhost:9090']
     scrape_interval: 10s
 
-  # Docker daemon metrics
+  # Docker daemon metrics (nécessite configuration Docker)
   - job_name: 'docker'
     static_configs:
       - targets: ['host.docker.internal:9323']
     scrape_interval: 30s
+    scrape_timeout: 10s
 
   # Traefik metrics
   - job_name: 'traefik'
@@ -36,17 +37,19 @@ scrape_configs:
     scrape_interval: 30s
     scrape_timeout: 10s
 
-  # Gitea metrics
+  # Gitea metrics (avec token)
   - job_name: 'gitea'
     static_configs:
       - targets: ['gitea:3000']
     metrics_path: '/metrics'
     scrape_interval: 30s
+    params:
+      token: ['prometheus-metrics-token']
 
-  # Docker Registry metrics
+  # Docker Registry metrics (debug port)
   - job_name: 'registry'
     static_configs:
-      - targets: ['registry:5000']
+      - targets: ['registry:5001']
     metrics_path: '/metrics'
     scrape_interval: 60s
 
